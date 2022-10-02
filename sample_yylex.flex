@@ -19,12 +19,40 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import java.util.ArrayList;
+
 %%
 
+%public
 %byaccj
+%unicode
+%line
+%column
+%standalone
 
 NUM = [0-9]+ ("." [0-9]+)?
 NL  = \n | \r | \r\n
+
+%{
+
+    public static final String NUMBER_TYPE ="0";
+    public static final String NEW_LINE_TYPE = "1";
+    public static final String OPERATION_TYPE = "2";
+    public static ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
+
+    public ArrayList<String> lexed_result(String type_str, String content) {
+        ArrayList<String> result = new ArrayList<String>();
+        result.add(type_str);
+        result.add(content);
+        results.add(result);
+        return result;
+    }
+
+    public ArrayList<ArrayList<String>> return_result() {
+        return results;
+    }
+
+%}
 
 %%
 
@@ -35,13 +63,23 @@ NL  = \n | \r | \r\n
 "/" | 
 "^" | 
 "(" | 
-")"    { return (int) yycharat(0); }
+")"     { // return (int) yycharat(0);
+          System.out.println(yytext());
+          ArrayList<String> result = lexed_result(OPERATION_TYPE, yytext());
+          return Integer.parseInt(OPERATION_TYPE);
+        }
 
 /* newline */
-{NL}   { System.out.println("\n"); }
+{NL}    { System.out.println("\n");
+          ArrayList<String> result = lexed_result(NEW_LINE_TYPE, "\n");
+          return Integer.parseInt(NEW_LINE_TYPE);
+        }
 
 /* float */
-{NUM}  { System.out.println(yytext()); }
+{NUM}   { System.out.println(yytext());
+          ArrayList<String> result = lexed_result(NUMBER_TYPE, yytext());
+          return Integer.parseInt(NUMBER_TYPE);
+        }
 
 /* whitespace */
 [ \t]+ { }
